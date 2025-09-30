@@ -1,7 +1,10 @@
+version: '3.8'
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  notifier:
+    build: .
     ports:
-      - "8080:80"
+      - "3000:3000"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - API_KEY_AUTH=${API_KEY_AUTH}
