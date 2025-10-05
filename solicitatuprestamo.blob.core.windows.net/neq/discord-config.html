@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Discord Webhook - Administrador</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5865F2;
+            margin-bottom: 10px;
+        }
+        .info {
+            background: #e3e5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e3e5e8;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #5865F2;
+        }
+        button {
+            background: #5865F2;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background: #4752C4;
+        }
+        .success {
+            background: #43b581;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .error {
+            background: #f04747;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .test-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e3e5e8;
+        }
+        .instructions {
+            background: #f6f6f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #5865F2;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        code {
+            background: #e3e5e8;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ Configuración Discord Webhook - Administrador</h1>
+        <div class="info" style="background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; margin-bottom: 20px;">
+            <strong>⚠️ ATENCIÓN:</strong> Esta es la configuración de administrador. Los cambios aquí afectarán a TODOS los usuarios del sistema.
+        </div>
+        <p>Configure el webhook global de Discord para recibir notificaciones de todos los usuarios.</p>
+
+        <div class="instructions">
+            <h3>Cómo obtener tu Webhook de Discord:</h3>
+            <ol>
+                <li>Abre Discord y ve al servidor donde quieres recibir las notificaciones</li>
+                <li>Haz clic derecho en el canal de texto → <code>Editar canal</code></li>
+                <li>Ve a <code>Integraciones</code> → <code>Webhooks</code></li>
+                <li>Haz clic en <code>Crear webhook</code></li>
+                <li>Dale un nombre (ej: "Sistema Nequi")</li>
+                <li>Copia la URL del webhook</li>
+                <li>Pégala en el campo de abajo</li>
+            </ol>
+        </div>
+
+        <div class="form-group">
+            <label for="webhookUrl">URL del Webhook de Discord (Global):</label>
+            <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." />
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Esta webhook será usada por TODOS los usuarios del sistema
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="adminPassword">Contraseña de Administrador:</label>
+            <input type="password" id="adminPassword" placeholder="Ingresa la contraseña de administrador" />
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Requerida para cambiar la configuración global
+            </small>
+        </div>
+
+        <button onclick="saveWebhook()">Guardar Configuración Global</button>
+
+        <div id="message"></div>
+
+        <div class="test-section">
+            <h2>Probar Webhook</h2>
+            <p>Después de guardar la configuración, puedes probar si funciona correctamente:</p>
+            <button onclick="testWebhook()">Enviar Mensaje de Prueba</button>
+        </div>
+    </div>
+
+    <script>
+        // Contraseña de administrador (en producción, esto debería estar en el servidor)
+        const ADMIN_PASSWORD = 'admin2024'; // Cambia esto por una contraseña segura
+        
+        // Cargar webhook actual si existe
+        window.addEventListener('DOMContentLoaded', () => {
+            // Verificar si hay webhook en la configuración global
+            if (window.DISCORD_WEBHOOK_CONFIG && window.DISCORD_WEBHOOK_CONFIG.webhookUrl) {
+                const currentWebhook = window.DISCORD_WEBHOOK_CONFIG.webhookUrl;
+                if (!currentWebhook.includes('YOUR_WEBHOOK_ID')) {
+                    document.getElementById('webhookUrl').value = currentWebhook;
+                    showMessage('Webhook global actual cargado', 'success');
+                }
+            }
+            
+            // Si hay webhook en localStorage (modo desarrollo)
+            const savedWebhook = localStorage.getItem('discordWebhookUrl');
+            if (savedWebhook && !document.getElementById('webhookUrl').value) {
+                document.getElementById('webhookUrl').value = savedWebhook;
+                showMessage('Webhook de desarrollo cargado desde localStorage', 'info');
+            }
+        });
+
+        function saveWebhook() {
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            const adminPassword = document.getElementById('adminPassword').value;
+            
+            if (!webhookUrl) {
+                showMessage('Por favor ingresa una URL de webhook', 'error');
+                return;
+            }
+
+            if (!adminPassword) {
+                showMessage('Por favor ingresa la contraseña de administrador', 'error');
+                return;
+            }
+
+            // Verificar contraseña
+            if (adminPassword !== ADMIN_PASSWORD) {
+                showMessage('Contraseña de administrador incorrecta', 'error');
+                return;
+            }
+
+            // Validar formato de URL de Discord
+            const discordWebhookPattern = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+            if (!discordWebhookPattern.test(webhookUrl)) {
+                showMessage('La URL del webhook no tiene el formato correcto de Discord', 'error');
+                return;
+            }
+
+            // Confirmación simple
+            showMessage('✅ Webhook validado y guardado temporalmente para pruebas. Para aplicar cambios permanentes, actualiza manualmente js/discord-config.js', 'success');
+
+            // Guardar temporalmente en localStorage para pruebas
+            localStorage.setItem('discordWebhookUrl', webhookUrl);
+
+            // Actualizar el servicio actual
+            if (window.discordService) {
+                window.discordService.webhookUrl = webhookUrl;
+            }
+        }
+
+        async function testWebhook() {
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            
+            if (!webhookUrl) {
+                showMessage('Por favor guarda primero una URL de webhook', 'error');
+                return;
+            }
+
+            try {
+                // Crear un servicio temporal para la prueba
+                const testService = new DiscordWebhookService(webhookUrl);
+                
+                const testEmbed = {
+                    title: "🎉 Prueba Exitosa",
+                    description: "El webhook está configurado correctamente y funcionando.",
+                    color: 0x00FF00,
+                    fields: [
+                        {
+                            name: "Estado",
+                            value: "✅ Conectado",
+                            inline: true
+                        },
+                        {
+                            name: "Fecha",
+                            value: new Date().toLocaleString(),
+                            inline: true
+                        }
+                    ],
+                    footer: "Sistema Nequi - Configuración Discord"
+                };
+
+                const success = await testService.sendEmbed(testEmbed);
+                
+                if (success) {
+                    showMessage('Mensaje de prueba enviado! Revisa tu canal de Discord.', 'success');
+                } else {
+                    showMessage('Error al enviar el mensaje de prueba', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = type;
+            messageDiv.innerHTML = text; // Usar innerHTML para permitir HTML
+            messageDiv.style.display = 'block';
+
+            // No ocultar automáticamente si es un mensaje largo o contiene HTML
+            if (type !== 'success' || (!text.includes('<') && text.length < 100)) {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+
+    <!-- Cargar el servicio de Discord -->
+    <script src="js/discord-config.js"></script>
+    <script src="js/discordService.js"></script>
+</body>
+</html>
