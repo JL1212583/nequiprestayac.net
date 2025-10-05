@@ -1,0 +1,13 @@
+{
+  "name": "nequiprestayac-telegram",
+  "version": "1.0.0",
+  "description": "Proyecto adaptado a Telegram Bot + p\u00e1gina est\u00e1tica (from user repo).",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0",
+    "dotenv": "^16.0.0"
+  }
+}
