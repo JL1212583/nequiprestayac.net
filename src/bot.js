@@ -1,6 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -14,7 +11,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 // Comando /start
 bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(msg.chat.id, "👋 ¡Hola! Soy tu bot de Telegram 🚀");
+  bot.sendMessage(msg.chat.id, "👋 ¡Hola! Soy tu bot de Telegram y tu web también está activa 🚀");
 });
 
 // Responde a cualquier mensaje (evita repetir /start)
@@ -24,6 +21,4 @@ bot.on("message", (msg) => {
   }
 });
 
-// Opcional: servir la página estática localmente (si en el futuro quieres añadir un servidor)
-// Por ahora el bot corre en polling y la carpeta 'public/' contiene tu index.html
-console.log("Bot iniciado. Esperando mensajes...");
+module.exports = bot;

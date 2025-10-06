@@ -1,8 +1,10 @@
 version: "3.8"
 
 services:
-  telegram-bot:
+  web-bot:
     build: .
-    container_name: telegram_bot
+    container_name: nequiprestayac_web_bot
+    ports:
+      - "3000:3000"
     env_file: .env
     restart: unless-stopped
